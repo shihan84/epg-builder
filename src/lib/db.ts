@@ -13,11 +13,14 @@ export const db =
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
 
-// Test database connection
+// Test database connection only in non-build environments
 async function testConnection() {
   try {
-    await db.$connect()
-    console.log('Database connected successfully')
+    // Don't try to connect during build time
+    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      await db.$connect()
+      console.log('Database connected successfully')
+    }
   } catch (error) {
     console.error('Database connection failed:', error)
   }
