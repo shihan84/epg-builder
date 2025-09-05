@@ -1,24 +1,29 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Enable strict mode for production builds
+  reactStrictMode: true,
+  
+  // Environment-specific configurations
   typescript: {
-    ignoreBuildErrors: true,
+    // Don't ignore build errors in production
+    ignoreBuildErrors: false,
   },
-  // 禁用 Next.js 热重载，由 nodemon 处理重编译
-  reactStrictMode: false,
-  webpack: (config, { dev }) => {
-    if (dev) {
-      // 禁用 webpack 的热模块替换
-      config.watchOptions = {
-        ignored: ['**/*'], // 忽略所有文件变化
-      };
-    }
-    return config;
-  },
+  
   eslint: {
-    // 构建时忽略ESLint错误
-    ignoreDuringBuilds: true,
+    // Don't ignore ESLint errors in production
+    ignoreDuringBuilds: false,
+  },
+  
+  // Handle static generation for API routes
+  generateBuildId: async () => {
+    return 'epg-manager-build-' + Date.now();
+  },
+  
+  // Handle images optimization
+  images: {
+    domains: ['localhost'],
+    unoptimized: false,
   },
 };
 

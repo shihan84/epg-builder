@@ -60,7 +60,6 @@ export async function POST(request: NextRequest) {
     const targetChannelPrograms = await db.program.findMany({
       where: {
         userId,
-        channelId: targetChannelId,
       },
       select: {
         title: true,

@@ -4,6 +4,14 @@ import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if database is available
+    if (!db) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
+      );
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -56,6 +64,15 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Login error:', error);
+    
+    // Handle database connection errors specifically
+    if (error instanceof Error && error.message.includes('database')) {
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

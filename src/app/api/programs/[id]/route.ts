@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteParams
 ) {
   try {
+    const params = await context.params;
     const userId = request.headers.get('user-id');
 
     if (!userId) {
@@ -55,9 +60,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteParams
 ) {
   try {
+    const params = await context.params;
     const userId = request.headers.get('user-id');
 
     if (!userId) {
