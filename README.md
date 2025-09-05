@@ -2,7 +2,13 @@
 
 A comprehensive web application for managing Electronic Program Guides (EPG) for TV channels and streaming services. Built specifically for Indian language channels with support for schedule copying, program management, and multi-channel operations.
 
-## ✨ Features
+## ✨ **Status: Production Ready** 🚀
+
+**Live Demo:** [https://epg-builder-nu.vercel.app](https://epg-builder-nu.vercel.app)
+
+---
+
+## 🎯 Key Features
 
 ### 🎯 Core Functionality
 - **📺 Channel Management** - Add, edit, and organize TV channels with language and category support
@@ -23,61 +29,26 @@ A comprehensive web application for managing Electronic Program Guides (EPG) for
 - **Intuitive Navigation** - Clean dashboard with easy access to all features
 - **Real-time Updates** - Instant feedback for all operations
 
-## 🚀 Technology Stack
-
-### 🎯 Core Framework
-- **⚡ Next.js 15** - React framework with App Router
-- **📘 TypeScript 5** - Type-safe development
-- **🎨 Tailwind CSS 4** - Utility-first CSS framework
-
-### 🧩 UI Components
-- **🧩 shadcn/ui** - High-quality accessible components
-- **🎯 Lucide React** - Beautiful icon library
-- **📊 TanStack Table** - Powerful data tables
-
-### 🗄️ Database & Backend
-- **🗄️ Prisma** - Modern ORM with SQLite
-- **🔐 bcryptjs** - Password hashing
-- **🌐 REST API** - Clean API endpoints
-
-## 🎯 Use Cases
-
-### For TV Channel Operators
-- **Multi-channel Management** - Manage multiple channels from a single dashboard
-- **Schedule Planning** - Create weekly/monthly program schedules
-- **Template Reuse** - Save schedule patterns for repeated use
-- **Bulk Operations** - Copy schedules between similar channels
-
-### For Streaming Services
-- **Content Organization** - Manage program libraries with rich metadata
-- **Schedule Automation** - Set up recurring program schedules
-- **Channel Branding** - Customize channel information and logos
-- **Multi-language Support** - Handle content in various Indian languages
-
-### For Content Distributors
-- **Client Management** - Multiple client accounts with isolated data
-- **Schedule Sharing** - Copy proven schedules between client channels
-- **Program Duplication** - Quickly populate new channels with existing content
-- **Reporting** - Track channel and program statistics
-
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn
+- PostgreSQL database (Supabase recommended)
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd epg-manager
+git clone https://github.com/shihan84/epg-builder.git
+cd epg-builder
 
 # Install dependencies
 npm install
 
 # Set up environment variables
 cp .env.example .env
+# Edit .env with your database URL
 
 # Initialize database
 npm run db:push
@@ -91,12 +62,15 @@ npm run dev
 Create a `.env` file in the root directory:
 
 ```env
-# Database
-DATABASE_URL="file:./dev.db"
+# PostgreSQL Database (Supabase)
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-ID].supabase.co:5432/postgres"
 
-# Application (optional)
-NEXTAUTH_SECRET="your-secret-key"
+# Application Configuration (Optional for development)
+NEXTAUTH_SECRET="your-secret-key-here"
 NEXTAUTH_URL="http://localhost:3000"
+
+# Node Environment
+NODE_ENV="development"
 ```
 
 ## 📁 Project Structure
@@ -113,6 +87,7 @@ src/
 │   ├── dashboard/         # Dashboard pages
 │   ├── login/            # Login page
 │   ├── register/         # Registration page
+│   ├── setup/            # Setup page
 │   └── page.tsx           # Landing page
 ├── components/            # React components
 │   └── ui/               # shadcn/ui components
@@ -164,15 +139,16 @@ npm run build
 npm start
 ```
 
-### GitHub Pages
-1. **Build Project** - `npm run build`
-2. **Deploy** - Push `out` folder to GitHub Pages branch
-3. **Configure** - Set up custom domain in repository settings
-
 ### Other Platforms
 - **Netlify** - Connect repository and configure build settings
 - **Railway** - Deploy with one-click from GitHub template
 - **Digital Ocean** - Use App Platform for seamless deployment
+
+### Environment Variables for Production
+```env
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-ID].supabase.co:5432/postgres"
+NODE_ENV="production"
+```
 
 ## 🔧 Development
 
@@ -180,6 +156,9 @@ npm start
 ```bash
 # Push schema changes to database
 npm run db:push
+
+# Generate Prisma client
+npm run db:generate
 
 # View database (optional)
 npm run db:studio
@@ -200,6 +179,42 @@ npm run type-check
 - **Programs**: `/api/programs` (GET, POST), `/api/programs/[id]` (PUT, DELETE)
 - **Schedules**: `/api/schedules` (GET, POST), `/api/schedules/[id]` (PUT, DELETE)
 - **Copy Operations**: `/api/schedules/copy`, `/api/programs/copy`
+- **Setup**: `/api/setup/test-user` (create demo user)
+
+## 🎯 Use Cases
+
+### For TV Channel Operators
+- **Multi-channel Management** - Manage multiple channels from a single dashboard
+- **Schedule Planning** - Create weekly/monthly program schedules
+- **Template Reuse** - Save schedule patterns for repeated use
+- **Bulk Operations** - Copy schedules between similar channels
+
+### For Streaming Services
+- **Content Organization** - Manage program libraries with rich metadata
+- **Schedule Automation** - Set up recurring program schedules
+- **Channel Branding** - Customize channel information and logos
+- **Multi-language Support** - Handle content in various Indian languages
+
+### For Content Distributors
+- **Client Management** - Multiple client accounts with isolated data
+- **Schedule Sharing** - Copy proven schedules between client channels
+- **Program Duplication** - Quickly populate new channels with existing content
+- **Reporting** - Track channel and program statistics
+
+## 🗄️ Database Setup
+
+### Supabase (Recommended)
+1. **Create Supabase Project** - Go to [supabase.com](https://supabase.com)
+2. **Get Database URL** - From project settings → database → connection string
+3. **Configure Environment** - Add `DATABASE_URL` to your deployment platform
+
+### PostgreSQL (Self-hosted)
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+```
 
 ## 🤝 Contributing
 
@@ -220,6 +235,36 @@ For support and questions:
 - **Issues**: Open an issue on GitHub for bug reports or feature requests
 - **Discussions**: Use GitHub Discussions for general questions
 
+## 📊 Technology Stack
+
+### 🎯 Core Framework
+- **⚡ Next.js 15** - React framework with App Router
+- **📘 TypeScript 5** - Type-safe development
+- **🎨 Tailwind CSS 4** - Utility-first CSS framework
+
+### 🧩 UI Components
+- **🧩 shadcn/ui** - High-quality accessible components
+- **🎯 Lucide React** - Beautiful icon library
+- **📊 TanStack Table** - Powerful data tables
+
+### 🗄️ Database & Backend
+- **🗄️ Prisma** - Modern ORM with PostgreSQL
+- **🔐 bcryptjs** - Password hashing
+- **🌐 REST API** - Clean API endpoints
+
+### 🚀 Deployment
+- **⚡ Vercel** - Serverless deployment platform
+- **🗄️ Supabase** - PostgreSQL database hosting
+- **📦 GitHub Actions** - CI/CD pipeline
+
 ---
 
+## 🎉 Ready for Production!
+
 Built with ❤️ for the Indian TV broadcasting community. Streamline your EPG management with modern web technology.
+
+**Live Demo:** [https://epg-builder-nu.vercel.app](https://epg-builder-nu.vercel.app)
+
+---
+
+*Last Updated: September 2025*
