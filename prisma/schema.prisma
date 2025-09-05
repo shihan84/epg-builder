@@ -14,19 +14,114 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  password      String
+  company       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  channels      Channel[]
+  programs      Program[]
+  schedules     Schedule[]
+  templates     Template[]
+  
+  @@map("users")
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Channel {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  logo        String?
+  language    String?  // e.g., Hindi, Tamil, Telugu, etc.
+  category    String?  // e.g., Entertainment, News, Sports, etc.
+  streamUrl   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schedules   Schedule[]
+  
+  @@map("channels")
+}
+
+model Program {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  duration    Int      // in minutes
+  category    String?  // e.g., Movie, TV Show, News, etc.
+  genre       String?  // e.g., Drama, Comedy, Action, etc.
+  rating      String?  // e.g., U, UA, A, etc.
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schedules   Schedule[]
+  templateSchedules TemplateSchedule[]
+  
+  @@map("programs")
+}
+
+model Schedule {
+  id          String   @id @default(cuid())
+  startTime   DateTime
+  endTime     DateTime
+  isRecurring Boolean  @default(false)
+  recurringDays String? // e.g., "1,2,3,4,5,6,7" for Monday to Sunday
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  channelId   String
+  channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  programId   String
+  program     Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("schedules")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateSchedules TemplateSchedule[]
+  
+  @@map("templates")
+}
+
+model TemplateSchedule {
+  id          String   @id @default(cuid())
+  startTime   String   // Time in HH:MM format
+  dayOfWeek   Int      // 1-7 for Monday-Sunday
+  duration    Int      // in minutes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  templateId  String
+  template    Template  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  programId   String
+  program     Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  
+  @@map("template_schedules")
 }
