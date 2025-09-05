@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { db } from '@/lib/db';
+import { PrismaClient } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
   try {
     console.log('Test user creation request received');
     
-    // This is a one-time setup endpoint - in production, you'd want to protect this
     const { email, password, name, company } = await request.json();
 
     console.log('Test user data:', { email, name, company, hasPassword: !!password });
@@ -19,10 +18,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
+    // Create fresh Prisma client instance for this request
+    const prisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL!,
+        },
+      },
+    });
+
     try {
+      // Test database connection
+      console.log('Testing database connection...');
+      await prisma.$queryRaw`SELECT 1`;
+      console.log('Database connection successful');
+
+      // Check if user already exists
       console.log('Checking for existing user...');
-      const existingUser = await db.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { email },
       });
 
@@ -33,24 +46,17 @@ export async function POST(request: NextRequest) {
           { status: 409 }
         );
       }
-    } catch (dbError) {
-      console.error('Database query error (existing user check):', dbError);
-      return NextResponse.json(
-        { error: 'Database connection failed while checking existing user' },
-        { status: 503 }
-      );
-    }
 
-    // Hash password
-    try {
+      // Hash password
       console.log('Hashing password...');
       const hashedPassword = await bcrypt.hash(password, 12);
       console.log('Password hashed successfully');
 
       // Create user
       console.log('Creating user...');
-      const user = await db.user.create({
+      const user = await prisma.user.create({
         data: {
+          id: crypto.randomUUID(),
           email,
           password: hashedPassword,
           name,
@@ -67,30 +73,18 @@ export async function POST(request: NextRequest) {
         user: userWithoutPassword,
         message: 'Test user created successfully',
       });
-    } catch (createError) {
-      console.error('Test user creation error:', createError);
-      
-      // Provide more specific error messages
-      if (createError instanceof Error) {
-        if (createError.message.includes('Unique constraint')) {
-          return NextResponse.json(
-            { error: 'User with this email already exists' },
-            { status: 409 }
-          );
-        }
-        
-        if (createError.message.includes('connection') || createError.message.includes('database')) {
-          return NextResponse.json(
-            { error: 'Database connection failed. Please try again later.' },
-            { status: 503 }
-          );
-        }
-      }
-      
+    } catch (dbError) {
+      console.error('Database error:', dbError);
       return NextResponse.json(
-        { error: 'Failed to create test user. Please try again.' },
-        { status: 500 }
+        { 
+          error: 'Database connection failed',
+          details: dbError instanceof Error ? dbError.message : 'Unknown database error',
+          suggestion: 'Please check your DATABASE_URL environment variable and ensure database tables exist'
+        },
+        { status: 503 }
       );
+    } finally {
+      await prisma.$disconnect();
     }
   } catch (error) {
     console.error('Create test user error:', error);
