@@ -16,8 +16,8 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
 // Test database connection only in non-build environments
 async function testConnection() {
   try {
-    // Don't try to connect during build time
-    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+    // Don't try to connect during build time or in serverless environment
+    if (process.env.NEXT_PHASE !== 'phase-production-build' && process.env.NODE_ENV !== 'production') {
       await db.$connect()
       console.log('Database connected successfully')
     }
@@ -26,7 +26,7 @@ async function testConnection() {
   }
 }
 
-// Only test connection in development or when explicitly requested
+// Only test connection in development
 if (process.env.NODE_ENV === 'development') {
   testConnection()
 }

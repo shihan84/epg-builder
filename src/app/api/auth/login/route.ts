@@ -21,10 +21,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user by email
-    const user = await db.user.findUnique({
-      where: { email },
-    });
+    // Find user by email with error handling
+    let user;
+    try {
+      user = await db.user.findUnique({
+        where: { email },
+      });
+    } catch (dbError) {
+      console.error('Database query error:', dbError);
+      return NextResponse.json(
+        { error: 'Database query failed' },
+        { status: 503 }
+      );
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -66,9 +75,13 @@ export async function POST(request: NextRequest) {
     console.error('Login error:', error);
     
     // Handle database connection errors specifically
-    if (error instanceof Error && error.message.includes('database')) {
+    if (error instanceof Error && (
+      error.message.includes('database') || 
+      error.message.includes('Prisma') ||
+      error.message.includes('connection')
+    )) {
       return NextResponse.json(
-        { error: 'Database connection failed' },
+        { error: 'Database connection failed. Please try again later.' },
         { status: 503 }
       );
     }
