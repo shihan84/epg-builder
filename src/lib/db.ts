@@ -12,17 +12,33 @@ const getDatabaseUrl = () => {
   }
   
   // Otherwise, construct from Supabase environment variables
-  const host = process.env.POSTGRES_HOST || process.env.SUPABASE_URL?.replace('https://', '')
-  const user = process.env.POSTGRES_USER || 'postgres'
-  const password = 'A3xqZ9qgfegoCbwd' // Your database password
-  const database = process.env.POSTGRES_DATABASE || 'postgres'
-  const port = '5432'
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const postgresHost = process.env.POSTGRES_HOST
+  const postgresUser = process.env.POSTGRES_USER || 'postgres'
+  const postgresDatabase = process.env.POSTGRES_DATABASE || 'postgres'
+  
+  // Try to extract host from Supabase URL
+  let host = postgresHost
+  if (!host && supabaseUrl) {
+    // Convert Supabase URL to database host
+    // e.g., https://ijklmnopqrs.supabase.co -> db.ijklmnopqrs.supabase.co
+    const urlMatch = supabaseUrl.match(/https:\/\/([^\.]+)/)
+    if (urlMatch) {
+      const projectId = urlMatch[1]
+      host = `db.${projectId}.supabase.co`
+    }
+  }
   
   if (!host) {
     throw new Error('Database host not found in environment variables')
   }
   
-  return `postgresql://${user}:${password}@${host}:${port}/${database}`
+  // Try to get password from various sources
+  const password = process.env.SUPABASE_SERVICE_ROLE_KEY || 
+                     process.env.SUPABASE_ANON_KEY ||
+                     'A3xqZ9qgfegoCbwd' // fallback to known password
+  
+  return `postgresql://${postgresUser}:${password}@${host}:5432/${postgresDatabase}`
 }
 
 // Create a singleton Prisma client
